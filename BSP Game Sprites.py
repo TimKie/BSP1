@@ -21,7 +21,8 @@ img_dir = path.join(path.dirname(__file__), 'IMG')
 spaceship_img = pygame.image.load(path.join(img_dir, "241-2410583_spaceship-pacific-rim-pixel-art.png")).convert()
 meteorite_img = pygame.image.load(path.join(img_dir, "318b773d551baac.png")).convert()
 enemy_img = pygame.image.load(path.join(img_dir, "241-2410583_spaceship-pacific-rim-pixel-art2.png")).convert()
-
+background_img = pygame.image.load(path.join(img_dir, "background2.png")).convert()
+background_img_rect = background_img.get_rect()
 
 def draw_text(surface, text, size, x, y):
     font = pygame.font.Font(pygame.font.match_font('arial'), size)
@@ -245,7 +246,7 @@ while running:
     if pygame.sprite.spritecollide(e, spaceship_bullets, True):
         score += 50
 
-    screen.fill(Color("black"))
+    screen.blit(background_img, background_img_rect)
     all_sprites.draw(screen)
 
     draw_text(screen, "Score: "+str(score), 20, WIDTH/2, 20)
