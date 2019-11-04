@@ -37,6 +37,7 @@ class Spaceship(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(spaceship_img, (50, 47))
         self.image.set_colorkey(Color("white"))             # so there is no white rectangle around the image
         self.rect = self.image.get_rect()
+        self.radius = 23                                    # improves collision
         self.rect.centerx = WIDTH/2
         self.rect.bottom = HEIGHT - 5
         self.speedx = 0
@@ -79,9 +80,10 @@ class BulletSpaceship(pygame.sprite.Sprite):
 class Enemy(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.transform.scale(enemy_img, (40, 47))
+        self.image = pygame.transform.scale(enemy_img, (50, 47))
         self.image.set_colorkey(Color("white"))             # so there is no white rectangle around the image
         self.rect = self.image.get_rect()
+        self.radius = 23                                    # improves collision
         self.rect.centerx = WIDTH / 2
         self.rect.top = 40
         self.speedx = 0
@@ -126,6 +128,7 @@ class Meteorite(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(meteorite_img, (44, 36))
         self.image.set_colorkey(Color("black"))             # so there is no black rectangle around the image
         self.rect = self.image.get_rect()
+        self.radius = 19                                    # improves collision
         self.rect.x = randrange(0, WIDTH - self.rect.width)
         self.rect.y = randrange(-HEIGHT, -50)
         self.speedy = randrange(1, 4)
@@ -202,8 +205,11 @@ running = True
 while running:
     if show_menu:
         GameMenu()
+        show_menu = False
 
     for event in pygame.event.get():
+        if event.type == QUIT:
+            running = False
         if event.type == KEYDOWN:
             if event.key == K_SPACE:
                 s.shoot()
@@ -227,8 +233,8 @@ while running:
         all_sprites.add(m)
         meteorites.add(m)
 
-    # check collision between spaceship and meteorites (create list of all meteorites that hit the spaceship)
-    if pygame.sprite.spritecollide(s, meteorites, True):
+    # check collision between spaceship and meteorites ("pygame.sprite.collide_circle" improves the collision)
+    if pygame.sprite.spritecollide(s, meteorites, True, pygame.sprite.collide_circle):
         life -= 40
 
     # check collision between spaceship and EnemyBullets
@@ -251,6 +257,7 @@ while running:
 
     if life == 0:
         draw_text(screen, "GAME OVER!", 100, WIDTH/2, HEIGHT/2)
+        show_menu = True
 
     pygame.display.update()
     fpsClock.tick(FPS)
