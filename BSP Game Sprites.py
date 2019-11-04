@@ -55,12 +55,12 @@ class Spaceship(pygame.sprite.Sprite):
             self.rect.left = 0
 
     def shoot(self):
-        bullet = BulletSpacehip(self.rect.centerx, self.rect.top)
+        bullet = BulletSpaceship(self.rect.centerx, self.rect.top)
         all_sprites.add(bullet)
         spaceship_bullets.add(bullet)
 
 
-class BulletSpacehip(pygame.sprite.Sprite):
+class BulletSpaceship(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.Surface((5, 10))
@@ -138,6 +138,44 @@ class Meteorite(pygame.sprite.Sprite):
             self.speedy = randrange(1, 4)
 
 
+def GameMenu():
+    title = pygame.image.load(path.join(img_dir, "BSP-Asteroids-Game.png")).convert_alpha()
+    title = pygame.transform.scale(title, (900, 100))
+    background = pygame.image.load(path.join(img_dir, "background.png")).convert()
+    background_rect = background.get_rect()
+
+    # show game instructions
+    arrow_keys = pygame.image.load(path.join(img_dir, "arrowkeys.png")).convert_alpha()
+    arrow_keys = pygame.transform.scale(arrow_keys, (166, 113))
+    spacebar = pygame.image.load(path.join(img_dir, "spacebar.png")).convert_alpha()
+    spacebar = pygame.transform.scale(spacebar, (330, 53))
+
+    screen.blit(background, background_rect)
+    screen.blit(title, (40, 20))
+    screen.blit(arrow_keys, (WIDTH / 2 - 50, HEIGHT / 2))
+    screen.blit(spacebar, (WIDTH / 2 - 50, HEIGHT / 2 + 160))
+    draw_text(screen, "PRESS [ENTER] TO BEGIN", 35, WIDTH / 2, HEIGHT / 4 + 40)
+    draw_text(screen, "PRESS [Q] TO QUIT", 35, WIDTH / 2, HEIGHT / 4 + 80)
+
+    # game instructions
+    draw_text(screen, "MOVE:", 35, WIDTH / 2 - 150, HEIGHT / 2 + 90)
+    draw_text(screen, "SHOOT:", 35, WIDTH / 2 - 150 , HEIGHT / 2 + 190)
+
+    pygame.display.update()
+
+    while True:
+        event = pygame.event.poll()
+        if event.type == pygame.KEYDOWN:
+            if event.key == K_RETURN:
+                break
+            elif event.key == K_q:
+                pygame.quit()
+                sys.exit()
+        elif event.type == QUIT:
+            pygame.quit()
+            sys.exit()
+
+
 # add all objects to the corresponding sprite group
 all_sprites = pygame.sprite.Group()
 meteorites = pygame.sprite.Group()
@@ -159,11 +197,13 @@ life = 200
 score = 0
 
 # main loop
+show_menu = True
 running = True
 while running:
+    if show_menu:
+        GameMenu()
+
     for event in pygame.event.get():
-        if event.type == QUIT:
-            running = False
         if event.type == KEYDOWN:
             if event.key == K_SPACE:
                 s.shoot()
