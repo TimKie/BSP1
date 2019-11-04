@@ -211,9 +211,10 @@ while running:
     for event in pygame.event.get():
         if event.type == QUIT:
             running = False
-        if event.type == KEYDOWN:
-            if event.key == K_SPACE:
-                s.shoot()
+
+        keystate = pygame.key.get_pressed()
+        if keystate[K_SPACE]:
+            s.shoot()
 
     # random shooting rate of enemy
         enemy_event = USEREVENT + 1
@@ -239,11 +240,11 @@ while running:
         life -= 40
 
     # check collision between spaceship and EnemyBullets
-    if pygame.sprite.spritecollide(s, enemy_bullets, True):
+    if pygame.sprite.spritecollide(s, enemy_bullets, True, pygame.sprite.collide_circle):
         life -= 40
 
     # check collision between enemy and SpaceshipBullets
-    if pygame.sprite.spritecollide(e, spaceship_bullets, True):
+    if pygame.sprite.spritecollide(e, spaceship_bullets, True, pygame.sprite.collide_circle):
         score += 50
 
     screen.blit(background_img, background_img_rect)
