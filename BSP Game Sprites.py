@@ -24,6 +24,7 @@ enemy_img = pygame.image.load(path.join(img_dir, "241-2410583_spaceship-pacific-
 background_img = pygame.image.load(path.join(img_dir, "background2.png")).convert()
 background_img_rect = background_img.get_rect()
 
+
 def draw_text(surface, text, size, x, y):
     font = pygame.font.Font(pygame.font.match_font('arial'), size)
     text_surface = font.render(text, True, Color("white"))
@@ -94,7 +95,7 @@ class Enemy(pygame.sprite.Sprite):
         if self.rect.x > spaceship.rect.x:              # "artificial intelligence"
             self.speedx -= randint(1, 2)
         if self.rect.x < spaceship.rect.x:
-            self.speedx = randint(1, 2)
+            self.speedx += randint(1, 2)
         self.rect.x += self.speedx
         if self.rect.right > WIDTH:
             self.rect.right = WIDTH
@@ -163,7 +164,7 @@ def GameMenu():
 
     # game instructions
     draw_text(screen, "MOVE:", 35, WIDTH / 2 - 150, HEIGHT / 2 + 90)
-    draw_text(screen, "SHOOT:", 35, WIDTH / 2 - 150 , HEIGHT / 2 + 190)
+    draw_text(screen, "SHOOT:", 35, WIDTH / 2 - 150, HEIGHT / 2 + 190)
 
     pygame.display.update()
 
@@ -228,7 +229,7 @@ while running:
         e.move(s)
 
     # check collision between bullets and meteorites (every bullet and meteorite hit gets deleted (-> "True"))
-    hits = pygame.sprite.groupcollide(meteorites, spaceship_bullets, True, True)
+    hits = pygame.sprite.groupcollide(meteorites, spaceship_bullets, True, True, pygame.sprite.collide_circle)
     for hit in hits:
         score += 10
         m = Meteorite()
