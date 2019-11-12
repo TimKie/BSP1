@@ -119,13 +119,16 @@ class Meteorite(pygame.sprite.Sprite):
         self.rect.x = randrange(0, WIDTH - self.rect.width)
         self.rect.y = randrange(-HEIGHT, -50)
         self.speedy = randrange(1, 4)
+        self.speedx = randrange(-4, 4)
 
     def update(self):
         self.rect.y += self.speedy
-        if self.rect.top > HEIGHT + 40:
+        self.rect.x += self.speedx
+        if self.rect.top > HEIGHT + 40 or self.rect.right < -40 or self.rect.left > WIDTH + 40:
             self.rect.x = randrange(0, WIDTH - self.rect.width)
             self.rect.y = randrange(-HEIGHT, -50)
             self.speedy = randrange(1, 4)
+            self.speedx = randrange(-4, 4)
 
 
 # ----------------------------------------- VIEW ----------------------------------------------------------------------
