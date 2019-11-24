@@ -47,6 +47,12 @@ class Spaceship(pygame.sprite.Sprite):
         all_sprites.add(bullet)
         spaceship_bullets.add(bullet)
 
+    def reset(self):
+        for bullet in spaceship_bullets:
+            spaceship_bullets.remove(bullet)
+            bullet.image = pygame.Surface((0, 0))
+        self.rect.centerx = WIDTH/2
+
 
 class BulletSpaceship(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -71,7 +77,7 @@ class Enemy(pygame.sprite.Sprite):
         self.image.set_colorkey(Color("white"))             # so there is no white rectangle around the image
         self.rect = self.image.get_rect()
         self.radius = 23                                    # improves collision
-        self.rect.centerx = WIDTH / 2
+        self.rect.centerx = randint(50, WIDTH - 50)
         self.rect.top = 40
         self.speedx = 0
 
@@ -91,6 +97,12 @@ class Enemy(pygame.sprite.Sprite):
         bullet = BulletEnemy(self.rect.centerx, self.rect.bottom)
         all_sprites.add(bullet)
         enemy_bullets.add(bullet)
+
+    def reset(self):
+        for bullet in enemy_bullets:
+            enemy_bullets.remove(bullet)
+            bullet.image = pygame.Surface((0, 0))
+        self.rect.centerx = randint(50, WIDTH - 50)
 
 
 class BulletEnemy(pygame.sprite.Sprite):
@@ -166,8 +178,8 @@ def GameMenu():
     screen.blit(title, (40, 20))
     screen.blit(arrow_keys, (WIDTH / 2 - 50, HEIGHT / 2))
     screen.blit(spacebar, (WIDTH / 2 - 50, HEIGHT / 2 + 160))
-    draw_text(screen, "PRESS [ENTER] TO BEGIN", 35, WIDTH / 2, HEIGHT / 4 + 40)
-    draw_text(screen, "PRESS [Q] TO QUIT", 35, WIDTH / 2, HEIGHT / 4 + 80)
+    draw_text(screen, "PRESS [ENTER] TO START", 35, WIDTH / 2, HEIGHT / 4 + 40)
+    draw_text(screen, "PRESS [E] TO EXIT", 35, WIDTH / 2, HEIGHT / 4 + 80)
 
     # game instructions
     draw_text(screen, "MOVE:", 35, WIDTH / 2 - 150, HEIGHT / 2 + 90)
@@ -180,7 +192,67 @@ def GameMenu():
         if event.type == pygame.KEYDOWN:
             if event.key == K_RETURN:
                 break
-            elif event.key == K_q:
+            elif event.key == K_e:
+                pygame.quit()
+                sys.exit()
+        elif event.type == QUIT:
+            pygame.quit()
+            sys.exit()
+
+
+def WinningScreen():
+    title = pygame.image.load(path.join(img_dir, "BSP-Asteroids-Game.png")).convert_alpha()
+    title = pygame.transform.scale(title, (900, 100))
+    background = pygame.image.load(path.join(img_dir, "background.png")).convert()
+    background_rect = background.get_rect()
+
+    screen.blit(background, background_rect)
+    screen.blit(title, (40, 20))
+    draw_text(screen, "PRESS [ENTER] TO RESTART", 35, WIDTH / 2, HEIGHT / 4 + 40)
+    draw_text(screen, "PRESS [E] TO EXIT", 35, WIDTH / 2, HEIGHT / 4 + 80)
+    draw_text(screen, "YOU WON THE GAME!", 120, WIDTH / 2, HEIGHT / 2 + 100)
+
+    s.reset()
+    e.reset()
+
+    pygame.display.update()
+
+    while True:
+        event = pygame.event.poll()
+        if event.type == pygame.KEYDOWN:
+            if event.key == K_RETURN:
+                break
+            elif event.key == K_e:
+                pygame.quit()
+                sys.exit()
+        elif event.type == QUIT:
+            pygame.quit()
+            sys.exit()
+
+
+def LosingScreen():
+    title = pygame.image.load(path.join(img_dir, "BSP-Asteroids-Game.png")).convert_alpha()
+    title = pygame.transform.scale(title, (900, 100))
+    background = pygame.image.load(path.join(img_dir, "background.png")).convert()
+    background_rect = background.get_rect()
+
+    screen.blit(background, background_rect)
+    screen.blit(title, (40, 20))
+    draw_text(screen, "PRESS [ENTER] TO RESTART", 35, WIDTH / 2, HEIGHT / 4 + 40)
+    draw_text(screen, "PRESS [E] TO EXIT", 35, WIDTH / 2, HEIGHT / 4 + 80)
+    draw_text(screen, "GAME OVER!", 150, WIDTH / 2, HEIGHT / 2 + 100)
+
+    s.reset()
+    e.reset()
+
+    pygame.display.update()
+
+    while True:
+        event = pygame.event.poll()
+        if event.type == pygame.KEYDOWN:
+            if event.key == K_RETURN:
+                break
+            elif event.key == K_e:
                 pygame.quit()
                 sys.exit()
         elif event.type == QUIT:
@@ -207,7 +279,8 @@ for i in range(number_of_meteorites):
     all_sprites.add(m)
     meteorites.add(m)
 
-life = 200
+spaceship_life = 200
+enemy_life = 200
 score = 0
 
 # main loop
@@ -228,14 +301,16 @@ while running:
 
     # random shooting rate of enemy
         enemy_event = USEREVENT + 1
-        enemy_shoot_rate = randint(100, 400)
+        enemy_shoot_rate = randint(80, 200)
+        if e.rect.x == s.rect.x:                        # shoot rate is very high when the enemy is above the player
+            enemy_shoot_rate = 50                       # to prevent that the player easily wins the game
         pygame.time.set_timer(enemy_event, enemy_shoot_rate)
         if event.type == enemy_event:
             e.shoot()
 
-    if life > 0:
-        all_sprites.update()
+    if spaceship_life > 0 and enemy_life > 0:
         e.move(s)
+        all_sprites.update()
 
     # check collision between bullets and meteorites (every bullet and meteorite hit gets deleted (-> "True"))
     hits = pygame.sprite.groupcollide(meteorites, spaceship_bullets, True, True, pygame.sprite.collide_circle)
@@ -247,29 +322,46 @@ while running:
 
     # check collision between spaceship and meteorites ("pygame.sprite.collide_circle" improves the collision)
     if pygame.sprite.spritecollide(s, meteorites, True, pygame.sprite.collide_circle):
-        life -= 40
+        spaceship_life -= 40
 
     # check collision between spaceship and EnemyBullets
     if pygame.sprite.spritecollide(s, enemy_bullets, True, pygame.sprite.collide_circle):
-        life -= 40
+        spaceship_life -= 40
 
     # check collision between enemy and SpaceshipBullets
     if pygame.sprite.spritecollide(e, spaceship_bullets, True, pygame.sprite.collide_circle):
         score += 50
+        enemy_life -= 20
+
+    # check collision between enemy bullet and spaceship bullet
+    pygame.sprite.groupcollide(enemy_bullets, spaceship_bullets, True, True)
 
     screen.blit(background_img, background_img_rect)
     all_sprites.draw(screen)
 
     draw_text(screen, "Score: "+str(score), 20, WIDTH/2, 20)
 
-    # draw life bar
-    if life > 0:
-        pygame.draw.rect(screen, Color("green"), (WIDTH - 210, 10, life, 20))
+    # life bar of spaceship
+    if spaceship_life >= 0:
+        pygame.draw.rect(screen, Color("green"), (WIDTH - 210, 10, spaceship_life, 20))
         pygame.draw.rect(screen, Color("white"), (WIDTH - 210, 10, 200, 20), 1)
 
-    if life == 0:
-        draw_text(screen, "GAME OVER!", 100, WIDTH/2, HEIGHT/2)
-        show_menu = True
+    if spaceship_life == 0:
+        LosingScreen()
+        spaceship_life = 200
+        enemy_life = 200
+        score = 0
+
+    # life bar of enemy
+    if enemy_life >= 0:
+        pygame.draw.rect(screen, Color("red"), (10, 10, enemy_life, 20))
+        pygame.draw.rect(screen, Color("white"), (10, 10, 200, 20), 1)
+
+    if enemy_life == 0 or score == 10000:
+        WinningScreen()
+        spaceship_life = 200
+        enemy_life = 200
+        score = 0
 
     pygame.display.update()
     fpsClock.tick(FPS)
